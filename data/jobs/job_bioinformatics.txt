@@ -1,0 +1,16 @@
+Job Title: Senior Bioinformatics Scientist
+Location: Boston, MA
+Type: Full-time
+
+We are seeking a Bioinformatics Scientist to join our genomic research team. The ideal candidate will develop computational pipelines for analyzing Next-Generation Sequencing (NGS) data.
+
+Responsibilities:
+- Design statistical pipelines in R or Python to analyze RNA-seq and microarray data.
+- Develop network visualization tools using Cytoscape.
+- Collaborate with wet-lab biologists to interpret experimental results.
+
+Requirements:
+- MS or PhD in Computational Biology, Bioinformatics, or related field.
+- Strong proficiency in Python, R, and SQL.
+- Experience with NGS data analysis and tools like BLAST or CellNetAnalyser.
+- Published research in genomic signal processing is a plus.
