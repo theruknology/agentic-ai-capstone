@@ -1,6 +1,6 @@
 # Multi-Agent Hiring Assistant
 
-**Students:** Mohammed Ruknuddin, Aakar Mathur, Mustafa Fatehi, Palak Sharma, Parina  
+**Students:** Mohammed Ruknuddin, Aakar Mathur, Mustafa Fatehi, Palak Sharma, Parina Parekh
 
 **Progress:** Phase 1 (Data Ingestion & Agentic RAG)
 
