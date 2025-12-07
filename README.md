@@ -1,4 +1,4 @@
-# AI Readiness Capstone: Multi-Agent Hiring Assistant
+# Multi-Agent Hiring Assistant
 
 **Students:** Mohammed Ruknuddin, Aakar Mathur, Mustafa Fatehi, Palak Sharma, Parina  
 
