@@ -3,6 +3,7 @@ import shutil
 from langchain_community.document_loaders import PyPDFDirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 
@@ -32,13 +33,14 @@ def chunk_documents(documents):
     return chunks
 
 def save_to_chroma(chunks):
-    """Saves chunks to ChromaDB."""
-    # Clear old DB if it exists (optional, for fresh start)
     if os.path.exists(DB_PATH):
         shutil.rmtree(DB_PATH)
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # CHANGE 2: Use a local model (all-MiniLM-L6-v2 is standard, fast, and light)
+    print("Initializing local embeddings (this runs on your laptop)...")
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
+    # This might take 10-20 seconds the first time to download the model
     db = Chroma.from_documents(
         chunks, 
         embeddings, 

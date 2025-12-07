@@ -1,7 +1,10 @@
 langchain
 langchain-community
-langchain-google-genai
+sentence-transformers 
+langchain-huggingface
 chromadb
 pypdf
 python-dotenv
 langgraph
+langchain-google-genai
+langchain_chroma
