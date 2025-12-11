@@ -2,7 +2,7 @@
 
 **Students:** Mohammed Ruknuddin, Aakar Mathur, Mustafa Fatehi, Palak Sharma, Parina Parekh
 
-**Progress:** Phase 1 (Data Ingestion & Agentic RAG)
+**Progress:** Phase 4/5 (Agentic Prompting + Tools)
 
 ## 📖 Overview
 This project implements an **Agentic RAG** system to screen job candidates. It uses **Local Embeddings** (HuggingFace) for privacy and cost-efficiency, and **Google Gemini** for reasoning.
