@@ -1,0 +1,7 @@
+AI Engineers are involved in the end-to-end development and deployment of machine learning models. They translate complex data into AI-driven solutions that can perform autonomously in real-time environments. This role includes writing code, deploying models to production, and continuously monitoring and updating them as needed.
+Key responsibilities:
+
+    Design and develop AI models and algorithms from scratch.
+    Implement AI solutions that integrate with existing business systems to enhance functionality and user interaction.
+    Manage the data flow and infrastructure for effective AI deployment.
+    Collaborate across teams to align AI initiatives with organizational goals.

@@ -6,5 +6,8 @@ chromadb
 pypdf
 python-dotenv
 langgraph
-langchain-google-genai
 langchain_chroma
+langchain-groq
+streamlit
+pandas
+plotly

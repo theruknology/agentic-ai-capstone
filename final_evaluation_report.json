@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "generated_at": "2025-12-11T23:29:24.126189",
+    "model": "Llama-3.3-Groq"
+  },
+  "summary": {
+    "total_candidates": 2,
+    "high_match_count": 0,
+    "average_score": 65.0
+  },
+  "details": [
+    {
+      "meta": {
+        "id": "CAND_002",
+        "source": "data/resumes/Resume-1.pdf",
+        "timestamp": "Thu Dec 11 23:29:13 2025"
+      },
+      "evaluation": {
+        "plan": {
+          "steps": [
+            "Review the candidate's resume and online profiles to assess their experience and skills in AI engineering and full-stack development",
+            "Conduct a technical screening to evaluate the candidate's proficiency in Python, JavaScript, and relevant AI frameworks",
+            "Invite the candidate for an interview to assess their problem-solving skills, communication skills, and ability to work collaboratively",
+            "Assign a practical task or project to evaluate the candidate's ability to design and develop AI models and algorithms",
+            "Check the candidate's references and past work experience to validate their claims and assess their fit for the role"
+          ],
+          "logic": "This plan is designed to comprehensively evaluate the candidate's technical skills, problem-solving abilities, and collaborative mindset, which are essential for the AI Engineer role."
+        },
+        "screening": {
+          "fit_score": 0.7,
+          "matching_skills": [
+            "Python",
+            "Machine Learning",
+            "Collaboration",
+            "Data Science"
+          ],
+          "missing_skills": [
+            "AI model deployment",
+            "Real-time environment experience",
+            "Existing business system integration"
+          ],
+          "reasoning": "The candidate has experience in developing ML-driven solutions and has a strong base in fundamentals of OOP, DSA, Data Science, and Cloud Computing, but lacks specific experience in AI model deployment, real-time environment, and existing business system integration."
+        },
+        "interview_questions": {
+          "questions": [
+            "What is the difference between supervised and unsupervised learning, and how do you decide which approach to use for a given problem?",
+            "How do you handle overfitting in a machine learning model, and what techniques do you use to prevent it?",
+            "Can you explain the concept of transfer learning and how it can be applied to a real-world problem?",
+            "How do you evaluate the performance of a machine learning model, and what metrics do you use to measure its accuracy?",
+            "What is the role of regularization in machine learning, and how do you implement it in a model?",
+            "Can you describe a situation where you had to deploy a machine learning model to a production environment, and what steps you took to ensure its reliability and scalability?",
+            "How do you handle missing or imbalanced data in a machine learning dataset, and what techniques do you use to preprocess the data?",
+            "Can you explain the concept of ensemble learning and how it can be used to improve the accuracy of a machine learning model?",
+            "How do you stay up-to-date with new developments and advancements in the field of machine learning, and what resources do you use to learn about new techniques and tools?",
+            "Can you describe a project you worked on that involved integrating a machine learning model with a larger software system, and what challenges you faced in doing so?"
+          ],
+          "difficulty": "medium"
+        },
+        "skill_assessment": {
+          "tasks": [
+            "Design and implement a simple neural network to classify handwritten digits using the MNIST dataset",
+            "Develop a natural language processing model to classify text as either positive or negative sentiment",
+            "Create a recommender system to suggest products based on user purchase history"
+          ],
+          "evaluation_criteria": "The solution will be evaluated based on code quality, model performance, and ability to integrate with existing systems, with a focus on scalability, maintainability, and adherence to best practices in AI engineering"
+        },
+        "critic_review": {
+          "critique_passed": true,
+          "issues": [
+            "lack of experience in AI model deployment",
+            "limited knowledge of real-time environment",
+            "inadequate understanding of existing business system integration"
+          ],
+          "feedback": "The candidate demonstrates a strong foundation in machine learning and data science, but requires additional training and experience in AI model deployment, real-time environments, and integration with existing business systems to excel in the role of an AI Engineer."
+        }
+      }
+    },
+    {
+      "meta": {
+        "id": "CAND_001",
+        "source": "data/resumes/MRMAN.pdf",
+        "timestamp": "Thu Dec 11 23:28:50 2025"
+      },
+      "evaluation": {
+        "plan": {
+          "steps": [
+            "Review the candidate's experience in AI engineering and software development",
+            "Assess the candidate's skills in designing and developing AI models and algorithms",
+            "Evaluate the candidate's ability to implement AI solutions that integrate with existing business systems",
+            "Examine the candidate's experience with data flow and infrastructure management for AI deployment",
+            "Conduct a technical interview to assess the candidate's problem-solving skills and knowledge of AI engineering concepts"
+          ],
+          "logic": "This plan is designed to comprehensively evaluate the candidate's technical skills, experience, and ability to design and develop AI models and algorithms, as well as their ability to integrate AI solutions with existing business systems and manage data flow and infrastructure for effective AI deployment."
+        },
+        "screening": {
+          "fit_score": 0.6,
+          "matching_skills": [
+            "AI",
+            "Python",
+            "data pipeline"
+          ],
+          "missing_skills": [
+            "machine learning models",
+            "autonomous real-time environments",
+            "collaboration across teams"
+          ],
+          "reasoning": "The candidate has experience in building AI tools and working with Python, but lacks direct experience in designing and developing machine learning models, deploying them to production, and collaborating across teams to align AI initiatives with organizational goals."
+        },
+        "interview_questions": {
+          "questions": [
+            "How do you approach designing and developing AI models and algorithms from scratch, and what considerations do you take into account for real-time environments?",
+            "Can you describe a scenario where you had to implement AI solutions that integrate with existing business systems, and how you handled any challenges that arose?",
+            "What strategies do you use to manage the data flow and infrastructure for effective AI deployment, and how do you ensure scalability and reliability?",
+            "How do you collaborate with cross-functional teams to align AI initiatives with organizational goals, and what methods do you use to communicate complex technical concepts to non-technical stakeholders?",
+            "Can you walk me through your experience with building a comprehensive ETL process using Python and regex, and how you optimized the data pipeline for web-scraped information?",
+            "How do you stay up-to-date with the latest developments in AI and machine learning, and how do you see these advancements impacting your work as an AI engineer?",
+            "Can you describe your experience with image processing and computer vision, and how you used OpenCV and Streamlit to achieve a 50% reduction in image preprocessing time?",
+            "How do you approach creating reusable UI component libraries, and what benefits do you see in enhancing developer productivity and improving system design?",
+            "Can you discuss your experience with security, IAM policies, and programmatic authentication, and how you apply these concepts to AI engineering?",
+            "How do you handle model drift and concept drift in deployed AI models, and what strategies do you use to continuously monitor and update them as needed?"
+          ],
+          "difficulty": "medium"
+        },
+        "skill_assessment": {
+          "tasks": [
+            "Design and implement a simple neural network to classify handwritten digits using the MNIST dataset",
+            "Develop a natural language processing model to classify text as either positive or negative sentiment",
+            "Create a recommender system that suggests products to users based on their past purchases and browsing history"
+          ],
+          "evaluation_criteria": "The solution will be evaluated based on code quality, model performance, and ability to integrate with existing systems, as well as the candidate's ability to explain their design decisions and model choices"
+        },
+        "critic_review": {
+          "critique_passed": false,
+          "issues": [
+            "lack of direct experience in designing and developing machine learning models",
+            "inadequate collaboration across teams",
+            "insufficient experience in deploying models to production"
+          ],
+          "feedback": "The candidate has some relevant experience in building AI tools and working with Python, but needs to develop skills in machine learning model design, deployment, and cross-team collaboration to be successful in this role."
+        }
+      }
+    }
+  ]
+}
