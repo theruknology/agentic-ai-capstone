@@ -141,7 +141,7 @@ with tab3:
         df = pd.DataFrame(results)
         
         # Display Interactive Table
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch")
         
         st.divider()
         
