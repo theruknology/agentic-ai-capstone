@@ -4,53 +4,39 @@
 
 **Progress:** Phase 4/5 (Agentic Prompting + Tools)
 
-## 📖 Overview
-This project implements an **Agentic RAG** system to screen job candidates. It uses **Local Embeddings** (HuggingFace) for privacy and cost-efficiency, and **Google Gemini** for reasoning.
+## Overview
+An **Agentic RAG** system that screens job candidates using local embeddings (HuggingFace) for privacy and LLM reasoning. Uses 3-hop retrieval: broad vector search → agentic filtering → gap analysis & scoring.
 
-## 🚀 Key Features
-* **Hybrid Architecture:** Uses local CPU for vector embeddings (Unlimited/Free) and Gemini API for reasoning.
-* **3-Hop Agentic Retrieval:**
-    1.  **Broad Search:** Retrieves top candidate chunks via Vector Search.
-    2.  **Agentic Filter:** LLM evaluates relevance and **deduplicates** results.
-    3.  **Gap Analysis:** LLM identifies missing skills and scores the candidate.
-* **Robustness:** Includes **Automatic Throttling** (sleep timers) to respect Gemini Free Tier rate limits (5 RPM).
-
-## 🛠️ Setup & Installation
+## Setup
 
 ### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
-````
+```
 
-### 2\. Configure Environment
-
+### 2. Configure Environment
 Create a `.env` file in the root directory:
-
 ```env
-GOOGLE_API_KEY=your_actual_api_key_here
+GROQ_API_KEY=your_actual_api_key_here
 ```
 
-### 3\. Prepare Data
+### 3. Prepare Data
+- **Resumes:** Place PDF files in `data/resumes/`
+- **Jobs:** Place text files in `data/jobs/`
 
-  * **Resumes:** Place PDF files in `data/resumes/` (Split merged PDFs into individual files).
-  * **Jobs:** Place text files in `data/jobs/`.
+## How to Run
 
-## 🏃‍♂️ How to Run
-
-### Step 1: Ingest Data (Build "Memory")
-
-Parses PDFs and saves vectors locally using `HuggingFace all-MiniLM-L6-v2`.
-
+### Option 1: Terminal (CLI)
 ```bash
+# Step 1: Ingest and vectorize resumes
 python src/ingest.py
-```
 
-### Step 2: Run Agentic RAG (The "Brain")
-
-Retrieves and analyzes candidates against the job description.
-
-```bash
+# Step 2: Run evaluation on all candidates
 python src/main.py
 ```
 
-*\> **Note:** The script pauses for 15 seconds between candidates to prevent "429 Rate Limit" errors on the Gemini Free Tier.*
+### Option 2: Web GUI (Streamlit)
+```bash
+streamlit run src/app.py
+```
+Then interact with the application in your browser. Upload resumes and job descriptions, and view analysis reports directly in the GUI.
