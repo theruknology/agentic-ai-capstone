@@ -50,7 +50,7 @@ python src/ingest.py
 Retrieves and analyzes candidates against the job description.
 
 ```bash
-python src/rag_ops.py
+python src/main.py
 ```
 
 *\> **Note:** The script pauses for 15 seconds between candidates to prevent "429 Rate Limit" errors on the Gemini Free Tier.*
