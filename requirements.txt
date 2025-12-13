@@ -11,3 +11,5 @@ langchain-groq
 streamlit
 pandas
 plotly
+schedule
+requests
