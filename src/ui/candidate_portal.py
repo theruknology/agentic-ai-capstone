@@ -1,20 +1,27 @@
+import sys
 import streamlit as st
 import os
 import time
-import json
 from datetime import datetime
+
+# Fix path to import infra
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from src.infra.db import get_redis_client
+
+# Connect to Redis
+r = get_redis_client()
 
 # Configuration
 UPLOAD_DIR = "data/inbox"
-METADATA_FILE = "data/candidates.json"  # The "Database"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 st.set_page_config(page_title="Careers @ TechCorp", page_icon="🚀", layout="centered")
 
-# Custom CSS for "Public" feel
 st.markdown("""
     <style>
-    .main-header {text-align: left; padding: 20px;}
+    .stApp {}
+    .main-header {text-align: center; padding: 20px;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -35,29 +42,24 @@ with st.container(border=True):
 
     if st.button("Submit Application", type="primary", use_container_width=True):
         if name and email and uploaded_file:
-            # 1. Save PDF to Inbox
+            # --- STEP 1: Save Metadata to Redis ---
+            # We do this FIRST so the "database" record exists.
+            candidate_key = f"candidate:{uploaded_file.name}"
+            r.hset(candidate_key, mapping={
+                "name": name,
+                "email": email,
+                "status": "queued",
+                "submitted_at": datetime.now().isoformat(),
+            })
+
+            # --- STEP 2: Save PDF to Disk ---
             save_path = os.path.join(UPLOAD_DIR, uploaded_file.name)
             with open(save_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             
-            # 2. Update Metadata "Database"
-            metadata = {}
-            if os.path.exists(METADATA_FILE):
-                try:
-                    with open(METADATA_FILE, "r") as f:
-                        metadata = json.load(f)
-                except json.JSONDecodeError:
-                    metadata = {}
-            
-            # Map Filename -> Candidate Details
-            metadata[uploaded_file.name] = {
-                "name": name,
-                "email": email,
-                "submitted_at": datetime.now().isoformat()
-            }
-            
-            with open(METADATA_FILE, "w") as f:
-                json.dump(metadata, f, indent=2)
+            # --- STEP 3: Trigger the Worker ---
+            # Only push to the queue after the file is physically on disk
+            r.lpush("resume_queue", uploaded_file.name)
 
             st.success(f"🎉 Thanks, {name}! Application Received.")
             time.sleep(2)

@@ -4,10 +4,9 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader, TextLoade
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 
-load_dotenv() # Ensure GOOGLE_API_KEY is in your .env file
+load_dotenv() 
 
 # Configuration
 DATA_PATH = "data/resumes/"

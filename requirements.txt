@@ -13,3 +13,4 @@ pandas
 plotly
 schedule
 requests
+redis

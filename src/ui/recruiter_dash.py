@@ -1,3 +1,4 @@
+import sys
 import streamlit as st
 import os
 import shutil
@@ -7,8 +8,10 @@ import time
 
 # Import our backend modules
 # We import the functions directly to run them from the UI
-from ingest import load_documents, chunk_documents, save_to_chroma
-from main import HiringOrchestrator
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from src.infra.ingest import load_documents, chunk_documents, save_to_chroma
+from src.ai_engine.graph import HiringOrchestrator
 
 # Configuration
 DATA_DIR = "data"

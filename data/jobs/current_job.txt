@@ -1,7 +1,25 @@
-AI Engineers are involved in the end-to-end development and deployment of machine learning models. They translate complex data into AI-driven solutions that can perform autonomously in real-time environments. This role includes writing code, deploying models to production, and continuously monitoring and updating them as needed.
-Key responsibilities:
+At [Company X], we rely on a dynamic team of engineers to solve the many challenges and puzzles of our rapidly evolving technical stack. We’re seeking a full stack developer who is ready to work with new technologies and architectures in a forward-thinking organization that’s always pushing boundaries. This person will have complete, end-to-end ownership of projects. The ideal candidate has experience building products across the stack and a firm understanding of web frameworks, APIs, databases, and multiple back-end languages. The full stack developer will join a small team that uses new technology to solve challenges for both the front-end and back-end architecture, ultimately delivering amazing experiences for global users.
+Objectives of this role
 
-    Design and develop AI models and algorithms from scratch.
-    Implement AI solutions that integrate with existing business systems to enhance functionality and user interaction.
-    Manage the data flow and infrastructure for effective AI deployment.
-    Collaborate across teams to align AI initiatives with organizational goals.
+    Work across the full stack, building highly scalable distributed solutions that enable positive user experiences and measurable business growth
+    Develop new features and infrastructure in support of rapidly emerging business and project requirements
+    Assume leadership of new projects, from conceptualization to deployment
+    Ensure application performance, uptime, and scale, and maintain high standards for code quality and application design
+    Work with agile development methodologies, adhering to best practices and pursuing continued learning opportunities
+
+Responsibilities
+
+    Participate in all aspects of agile software development, including design, implementation, and deployment
+    Architect and provide guidance on building end-to-end systems optimized for speed and scale
+    Work primarily in NEXT.js, React, and JavaScript
+    Engage with inspiring designers and front-end engineers, and collaborate with leading back-end engineers to create reliable APIs
+    Collaborate across time zones via Slack, GitHub comments, documents, and frequent videoconferences
+
+Required skills and qualifications
+
+    At least one year of experience in building large-scale software applications
+    Experience in building web applications
+    Experience in designing and integrating RESTful APIs
+    Knowledge of React, and JavaScript
+    Excellent debugging and optimization skills
+    Experience in unit/integration testing
