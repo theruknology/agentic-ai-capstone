@@ -13,8 +13,6 @@ Unlike linear automation scripts, this system utilizes a **Cyclic State Graph** 
 
 ## System Architecture
 
-The system follows a **Domain-Driven Design (DDD)** approach, separating the user interface, infrastructure, and cognitive logic.
-
 ### 1. Event-Driven Core
 The system rejects tight coupling in favor of an asynchronous **Producer-Consumer** model:
 * **Producer (Portal):** Ingests PDF resumes, writes atomic metadata to a Redis Hash, and pushes a job identifier to a Redis List (`resume_queue`).
@@ -88,6 +86,12 @@ If you need to debug individual components locally:
 
   * Python 3.10+
   * Local Redis instance running on port 6379
+
+**Starting redis locally:**
+
+```bash
+docker run -d -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+```
 
 **Installation:**
 
