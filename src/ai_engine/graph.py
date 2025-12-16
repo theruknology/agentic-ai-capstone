@@ -6,17 +6,15 @@ from typing import TypedDict, Dict
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 
-# Fix imports to find the infra module
+# Fix imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from src.ai_engine.rag import AgenticRAG
 from src.ai_engine.agents import PECAgents
-from src.infra.db import get_redis_client  # <--- NEW IMPORT
+from src.infra.db import get_redis_client
+from src.infra.logger import logger # New Logger
 
 load_dotenv()
-
-# We no longer need METADATA_FILE
-# METADATA_FILE = "data/candidates.json" 
 
 class HiringState(TypedDict):
     job_description: str
@@ -25,70 +23,69 @@ class HiringState(TypedDict):
     candidate_source: str
     resume_text: str
     
-    # Agent Outputs
+    # Outputs
     plan: Dict
     screening: Dict
     questions: Dict
     assessment: Dict
     critique: Dict
     
-    # Logic Control
+    # Logic
     iteration_count: int 
     feedback: str
 
-# --- Nodes (Keep logic same) ---
+# --- Nodes ---
 class GraphNodes:
     def __init__(self):
         self.agents = PECAgents()
 
     def planner_node(self, state: HiringState):
-        print("   🔹 NODE: Planner")
+        logger.info("🔹 NODE: Planner")
         plan = self.agents.plan_evaluation(state["job_description"], state["resume_text"])
         return {"plan": plan}
 
     def screener_node(self, state: HiringState):
         count = state.get("iteration_count", 0) + 1
-        print(f"   🔹 NODE: Screener (Attempt {count})")
+        logger.info(f"🔹 NODE: Screener (Attempt {count})")
         feedback = state.get("feedback", "")
         result = self.agents.screen_resume(state["job_description"], state["resume_text"], feedback)
         return {"screening": result, "iteration_count": count}
 
     def interviewer_node(self, state: HiringState):
-        print("   🔹 NODE: Interviewer")
+        logger.info("🔹 NODE: Interviewer")
         questions = self.agents.generate_questions(state["job_description"], state["resume_text"])
         return {"questions": questions}
 
     def assessor_node(self, state: HiringState):
-        print("   🔹 NODE: Assessor")
+        logger.info("🔹 NODE: Assessor")
         assessment = self.agents.create_assessment(state["job_description"])
         return {"assessment": assessment}
 
     def critic_node(self, state: HiringState):
-        print("   🔹 NODE: Critic")
+        logger.info("🔹 NODE: Critic")
         critique = self.agents.critique_outputs(
             state["job_description"], state["screening"], state["questions"]
         )
-        return {"critique": critique}
+        return {"critique": critique, "feedback": critique.get("critic_feedback", "")}
 
 def route_critique(state: HiringState):
     critique = state.get("critique", {})
     count = state.get("iteration_count", 0)
+    
     if critique.get("critique_passed", True):
         return "end"
     if count >= 3:
-        print("   ⚠️ Max Retries Reached.")
+        logger.warning("⚠️ Max Retries Reached. Force Finishing.")
         return "end"
     return "refine"
 
-# --- The Orchestrator (UPDATED) ---
+# --- Orchestrator ---
 class HiringOrchestrator:
     def __init__(self):
         self.rag = AgenticRAG()
         self.nodes = GraphNodes()
         self.results_dir = "reports"
         os.makedirs(self.results_dir, exist_ok=True)
-        
-        # CONNECT TO REDIS
         self.redis = get_redis_client()
 
     def build_graph(self):
@@ -113,60 +110,69 @@ class HiringOrchestrator:
         return workflow.compile()
 
     def run_workflow(self, job_file: str):
-        print(f"📂 Loading Job: {job_file}")
+        logger.info(f"📂 Loading Job: {job_file}")
         with open(job_file, "r") as f:
             job_desc = f.read()
 
-        print("🔍 RAG: Retrieving & Filtering Candidates...")
+        # Hop 1 & 2
         broad_matches = self.rag.retrieve_candidates(job_desc, k=5)
         refined_candidates = self.rag.assess_relevance(job_desc, broad_matches)
 
         if not refined_candidates:
-            print("❌ No relevant candidates found. Exiting.")
+            logger.warning("❌ No relevant candidates found.")
             return
 
-        print(f"✅ Found {len(refined_candidates)} qualified candidates. Starting Graph Pipeline...")
+        logger.info(f"✅ Starting Graph for {len(refined_candidates)} candidates...")
         app = self.build_graph()
 
-        for i, doc in enumerate(refined_candidates):
+        for doc in refined_candidates:
             source_path = doc.metadata.get("source", "Unknown")
             filename = os.path.basename(source_path)
             
-            # --- FIX: LOOKUP REDIS INSTEAD OF JSON ---
+            # Redis Lookup
             candidate_key = f"candidate:{filename}"
-            # hgetall returns a dict like {'name': 'John', 'email': 'john@...'}
             candidate_info = self.redis.hgetall(candidate_key)
-            
             real_name = candidate_info.get("name", f"Unknown ({filename})")
-            email = candidate_info.get("email", "N/A")
             
-            print(f"\n🚀 Processing: {real_name} ({email})")
+            logger.info(f"🚀 Processing: {real_name}")
 
             initial_state = {
                 "job_description": job_desc,
                 "candidate_id": real_name,
-                "candidate_email": email,
+                "candidate_email": candidate_info.get("email", "N/A"),
                 "candidate_source": source_path,
                 "resume_text": doc.page_content,
                 "iteration_count": 0
             }
 
             final_state = app.invoke(initial_state)
+
+            # --- HOP 3 INTEGRATION: GAP VERIFICATION ---
+            missing = final_state['screening'].get('missing_skills', [])
+            if missing:
+                # We verify against the original doc
+                verified = self.rag.verify_missing_skills(doc, missing)
+                final_state['screening']['missing_skills'] = verified
+                
             self._save_report(final_state)
 
     def _save_report(self, state: HiringState):
         safe_id = "".join([c for c in state['candidate_id'] if c.isalnum() or c in (' ', '_')]).replace(" ", "_")
         filename = f"{self.results_dir}/{safe_id}_report.json"
         
+        # SCHEMA ALIGNMENT WITH RUBRIC
         output_data = {
-            "meta": {
-                "id": state["candidate_id"],
-                "email": state["candidate_email"],
+            "evaluation_metadata": {
+                "candidate_id": state["candidate_id"],
+                "candidate_email": state["candidate_email"],
                 "source": state["candidate_source"],
                 "timestamp": time.ctime(),
-                "iterations": state.get("iteration_count", 1)
+                "model": "Llama-3-70B-Groq"
             },
-            "evaluation": {
+            "match_score": state["screening"].get("match_score", 0),
+            "ranked_candidates": [state["candidate_id"]],
+            "critic_feedback": state.get("critique", {}).get("critic_feedback", "None"),
+            "full_details": {
                 "plan": state.get("plan"),
                 "screening": state.get("screening"),
                 "interview_questions": state.get("questions"),
@@ -177,12 +183,4 @@ class HiringOrchestrator:
         
         with open(filename, "w") as f:
             json.dump(output_data, f, indent=2)
-        print(f"   💾 Saved report to {filename}")
-
-if __name__ == "__main__":
-    job_path = "data/jobs/current_job.txt"
-    if os.path.exists(job_path):
-        orchestrator = HiringOrchestrator()
-        orchestrator.run_workflow(job_path)
-    else:
-        print(f"❌ Error: {job_path} not found.")
+        logger.info(f"💾 Report saved: {filename}")
