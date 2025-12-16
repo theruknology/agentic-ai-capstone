@@ -72,10 +72,11 @@ def check_and_alert(metadata, filename):
     if os.path.exists(report_path):
         with open(report_path) as f:
             data = json.load(f)
-            score = data["evaluation"]["screening"].get("fit_score", 0)
+            score = data.get("match_score", 0)
+            reasoning = data.get("full_details", {}).get("screening", {}).get("reasoning", "No reasoning provided.")
             
-            if score >= 0.7:
-                send_alert(name, email, score * 100, data["evaluation"]["screening"].get("reasoning", ""))
+            if score >= 70:
+                send_alert(name, email, score, reasoning)
 
 # --- Event Loop ---
 print("👷 Redis Worker Started. Waiting for jobs...")

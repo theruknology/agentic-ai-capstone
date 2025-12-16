@@ -4,7 +4,7 @@ import time
 from functools import wraps
 
 # Create a custom logger
-logger = logging.getLogger("TalentScout")
+logger = logging.getLogger("J*bLess")
 logger.setLevel(logging.INFO)
 
 # Console Handler (Standard Output)

@@ -18,7 +18,7 @@ def send_alert(candidate_name, email, score, reason):
     color = 0x00ff00 if score >= 80 else 0xffff00
 
     payload = {
-        "username": "TalentScout AI 🤖",
+        "username": "J*bLess AI 🤖",
         "embeds": [{
             "title": f"🚀 Top Candidate: {candidate_name}",
             "description": f"**Match Score:** {score:.1f}%\n\n_{reason}_",
