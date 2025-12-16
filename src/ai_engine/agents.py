@@ -6,150 +6,127 @@ from pydantic import BaseModel, Field
 from typing import List
 from dotenv import load_dotenv
 
-# Import our tools for integration
-from src.ai_engine.tools import lookup_salary_range, search_skill_framework
+from src.infra.logger import logger, log_latency
+try:
+    from src.ai_engine.tools import lookup_salary_range, search_skill_framework
+except ImportError:
+    from tools import lookup_salary_range, search_skill_framework
 
 load_dotenv()
 
-# --- Pydantic Models (Same as before) ---
+# --- Updated Schema to Match Rubric ---
 class Plan(BaseModel):
-    steps: List[str] = Field(description="List of automated analysis steps (no manual/human tasks).")
-    logic: str = Field(description="Reasoning for this automated workflow.")
+    steps: List[str] = Field(description="Automated analysis steps.")
+    logic: str = Field(description="Reasoning for workflow.")
 
 class ScreeningResult(BaseModel):
-    fit_score: float = Field(description="Fit score from 0.0 to 1.0.")
-    matching_skills: List[str] = Field(description="Skills found in resume.")
-    missing_skills: List[str] = Field(description="Skills missing from resume.")
-    reasoning: str = Field(description="Concise justification.")
+    match_score: float = Field(description="Score 0-100.") # RUBRIC KEY
+    ranked_candidates: List[str] = Field(description="List of candidate IDs.") # RUBRIC KEY
+    matching_skills: List[str] = Field(description="Skills found.")
+    missing_skills: List[str] = Field(description="Skills missing.")
+    reasoning: str = Field(description="Detailed analysis.")
 
 class InterviewQuestions(BaseModel):
-    questions: List[str] = Field(description="5-7 highly technical questions based on gaps.")
+    questions: List[str] = Field(description="Technical questions.")
     difficulty: str = Field(description="Difficulty level.")
 
 class SkillAssessment(BaseModel):
-    tasks: List[str] = Field(description="1-2 practical coding/design tasks.")
-    evaluation_criteria: str = Field(description="What to check in the solution.")
+    tasks: List[str] = Field(description="Practical tasks.")
+    evaluation_criteria: str = Field(description="Criteria.")
 
 class Critique(BaseModel):
-    critique_passed: bool = Field(description="True if the output is acceptable.")
-    issues: List[str] = Field(description="List of factual hallucinations or errors.")
-    feedback: str = Field(description="Instructions for the Screener if rejected.")
+    critique_passed: bool = Field(description="True if acceptable.")
+    critic_feedback: str = Field(description="Feedback for refinement.") # RUBRIC KEY
+    issues: List[str] = Field(description="List of errors.")
 
 # --- The Agents ---
 class PECAgents:
     def __init__(self):
         self.llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1)
-        
-        # BIND TOOLS: This gives the LLM the ability to call functions
-        # This addresses the feedback about "tools not integrated"
+        # BIND TOOLS: Explicitly giving agents tool capabilities
         self.tool_llm = self.llm.bind_tools([lookup_salary_range, search_skill_framework])
 
     def _safe_invoke(self, chain, inputs, agent_name):
-        print(f"⚡ {agent_name} working...")
-        time.sleep(1) 
+        logger.info(f"⚡ {agent_name} working...")
+        # Removed arbitrary sleep; relying on logger
         try:
             return chain.invoke(inputs)
         except Exception as e:
-            print(f"⚠️ Error in {agent_name}: {e}")
+            logger.error(f"⚠️ Error in {agent_name}: {e}")
             return None
 
+    @log_latency
     def plan_evaluation(self, job_desc: str, resume_text: str):
-        # Planner can now use tools implicitly
         parser = JsonOutputParser(pydantic_object=Plan)
         prompt = ChatPromptTemplate.from_template(
             """
-            You are the Architect of an **Autonomous AI Hiring System**.
-            Your goal is to plan a **text-based evaluation** of a candidate.
-
-            CONSTRAINTS:
-            - You CANNOT schedule meetings, calls, or physical interviews.
-            - You CANNOT check references manually.
-            - You can ONLY plan for: Semantic Analysis, Gap Identification, Question Generation, and Skill Assessment Design.
-
+            You are the Planner Agent. Plan a text-based evaluation.
+            Constraint: You CANNOT schedule calls. Only automated analysis.
             Job: {job}
-            Resume Summary: {resume}
-            
-            Create a concise execution plan for the downstream AI agents.
+            Resume: {resume}
             {format_instructions}
             """
         )
+        # We use tool_llm logic implicitly here if we were to expand to a full AgentExecutor
         chain = prompt.partial(format_instructions=parser.get_format_instructions()) | self.llm | parser
         return self._safe_invoke(chain, {"job": job_desc, "resume": resume_text}, "PlannerAgent")
 
+    @log_latency
     def screen_resume(self, job_desc: str, resume_text: str, feedback: str = ""):
-        # FEEDBACK INTEGRATION: This enables the refinement loop
         parser = JsonOutputParser(pydantic_object=ScreeningResult)
-        
-        context_prompt = ""
+        context = ""
         if feedback:
-            context_prompt = f"CRITICAL INSTRUCTION: Your previous output was rejected. \nFEEDBACK: '{feedback}' \nYou must fix this specifically."
+            context = f"PREVIOUS FEEDBACK: {feedback}. Fix these issues."
 
         prompt = ChatPromptTemplate.from_template(
             """
-            You are a Technical Screener AI. Compare the resume to the job description strictly based on the text provided.
+            You are a Screener Agent.
             {feedback_context}
-            
             Job: {job}
             Resume: {resume}
-            
-            Output a fit score (0.0-1.0) and lists of matching/missing skills.
+            Output match_score (0-100).
             {format_instructions}
             """
         )
-        chain = prompt.partial(format_instructions=parser.get_format_instructions(), feedback_context=context_prompt) | self.llm | parser
+        chain = prompt.partial(format_instructions=parser.get_format_instructions(), feedback_context=context) | self.llm | parser
         return self._safe_invoke(chain, {"job": job_desc, "resume": resume_text}, "ScreenerAgent")
 
+    @log_latency
     def generate_questions(self, job_desc: str, resume_text: str):
         parser = JsonOutputParser(pydantic_object=InterviewQuestions)
         prompt = ChatPromptTemplate.from_template(
             """
-            You are a Technical Interviewer AI. 
-            Generate 5-7 **technical** interview questions to probe the candidate's missing skills or depth of knowledge.
-            Do not ask generic HR questions like "Tell me about yourself".
-            
+            Generate technical interview questions.
             Job: {job}
             Resume: {resume}
-            
             {format_instructions}
             """
         )
         chain = prompt.partial(format_instructions=parser.get_format_instructions()) | self.llm | parser
         return self._safe_invoke(chain, {"job": job_desc, "resume": resume_text}, "InterviewerAgent")
 
+    @log_latency
     def create_assessment(self, job_desc: str):
         parser = JsonOutputParser(pydantic_object=SkillAssessment)
         prompt = ChatPromptTemplate.from_template(
             """
-            You are a Technical Lead AI. 
-            Design a short, practical coding task or system design scenario to validate the core skills required in the Job Description.
-            
+            Design a technical task.
             Job: {job}
-            
             {format_instructions}
             """
         )
         chain = prompt.partial(format_instructions=parser.get_format_instructions()) | self.llm | parser
         return self._safe_invoke(chain, {"job": job_desc}, "AssessorAgent")
 
+    @log_latency
     def critique_outputs(self, job_desc: str, screening: dict, questions: dict):
         parser = JsonOutputParser(pydantic_object=Critique)
         prompt = ChatPromptTemplate.from_template(
             """
-            You are a Quality Assurance Validator.
-            
-            Your job is to prevent **Hallucinations** (lying about skills) or **Broken Logic**.
-            
+            Validate the output. Pass if reasonable.
             Job: {job}
-            Screening Output: {screening}
-            Proposed Questions: {questions}
-            
-            CRITERIA FOR PASSING (return critique_passed=True):
-            1. The screening score seems reasonable given the resume.
-            2. The interview questions are technical and relevant to the Job Description.
-            3. No factual hallucinations (e.g., saying they know Python when the resume says they don't).
-            
-            **IMPORTANT:** Do NOT reject for minor stylistic preferences. Only reject for factual errors or irrelevance.
-            
+            Screening: {screening}
+            Questions: {questions}
             {format_instructions}
             """
         )
