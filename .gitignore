@@ -3,3 +3,5 @@ venv
 chroma_db
 __pycache__
 reports
+system.log
+final_evaluation_report.json
