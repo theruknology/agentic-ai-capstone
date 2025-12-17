@@ -1,22 +1,24 @@
 import sys
 import os
-import redis
+import time
 import shutil
 import json
-import time
+import redis
 from langchain_community.document_loaders import PyPDFLoader
 from dotenv import load_dotenv
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/.."))
+# --- PATH SETUP ---
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from langchain_community.document_loaders import PyPDFLoader
-from src.infra.db import get_redis_client
 from src.infra.ingest import chunk_documents, save_to_chroma 
-from src.infra.notifier import send_alert
 from src.ai_engine.graph import HiringOrchestrator
+from src.infra.notifier import send_alert
+from src.infra.db import get_redis_client
+from src.infra.logger import logger
 
 load_dotenv()
 
+# Setup Redis
 r = get_redis_client()
 
 INBOX_DIR = "data/inbox"
@@ -27,7 +29,7 @@ os.makedirs(INBOX_DIR, exist_ok=True)
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 
 def process_candidate(filename):
-    print(f"⚡ EVENT: Picked up {filename} from Queue")
+    logger.info(f"⚡ EVENT: Picked up {filename} from Queue")
     
     # 1. Update Status
     candidate_key = f"candidate:{filename}"
@@ -35,59 +37,81 @@ def process_candidate(filename):
     
     filepath = os.path.join(INBOX_DIR, filename)
     if not os.path.exists(filepath):
-        print(f"⚠️ File missing: {filepath}")
+        logger.warning(f"⚠️ File missing: {filepath}")
         return
 
-    # 2. Ingest
-    print(f"   - Ingesting...")
-    loader = PyPDFLoader(filepath)
-    docs = loader.load()
-    chunks = chunk_documents(docs)
-    save_to_chroma(chunks)
-    
+    # 2. Ingest (With Retry Logic for DB Locking)
+    logger.info(f"   - Ingesting...")
+    try:
+        loader = PyPDFLoader(filepath)
+        docs = loader.load()
+        chunks = chunk_documents(docs)
+        
+        # RETRY LOOP for Database Locks
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                save_to_chroma(chunks)
+                break # Success
+            except Exception as e:
+                if "locked" in str(e) or "readonly" in str(e):
+                    logger.warning(f"⚠️ DB Locked. Retrying in 1s... ({attempt+1}/{max_retries})")
+                    time.sleep(1)
+                else:
+                    raise e # Real error, crash it
+    except Exception as e:
+        logger.error(f"❌ Ingestion Failed: {e}")
+        # Move to processed anyway to unblock queue
+        shutil.move(filepath, os.path.join(PROCESSED_DIR, filename))
+        return
+
     # 3. Run Pipeline
     if os.path.exists(JOB_FILE):
         orchestrator = HiringOrchestrator()
-        orchestrator.run_workflow(JOB_FILE) # This saves the JSON report
+        orchestrator.run_workflow(JOB_FILE) 
         
         # 4. Notify
-        # We fetch Name/Email from Redis to look up the JSON report
         metadata = r.hgetall(candidate_key)
-        check_and_alert(metadata, filename)
+        check_and_alert(metadata)
 
     # 5. Cleanup
-    shutil.move(filepath, os.path.join(PROCESSED_DIR, filename))
+    if os.path.exists(filepath):
+        shutil.move(filepath, os.path.join(PROCESSED_DIR, filename))
+    
     r.hset(candidate_key, "status", "completed")
-    print(f"✅ Finished processing {filename}")
+    logger.info(f"✅ Finished processing {filename}")
 
-def check_and_alert(metadata, filename):
-    # Retrieve details
+def check_and_alert(metadata):
     name = metadata.get("name", "Unknown")
     email = metadata.get("email", "No Email")
     
-    # Locate the report by sanitized name (same logic as main.py)
+    # Locate report
     safe_id = "".join([c for c in name if c.isalnum() or c in (' ', '_')]).replace(" ", "_")
     report_path = f"reports/{safe_id}_report.json"
     
     if os.path.exists(report_path):
-        with open(report_path) as f:
-            data = json.load(f)
-            score = data.get("match_score", 0)
-            reasoning = data.get("full_details", {}).get("screening", {}).get("reasoning", "No reasoning provided.")
-            
-            if score >= 70:
-                send_alert(name, email, score, reasoning)
+        try:
+            with open(report_path) as f:
+                data = json.load(f)
+                # NEW SCHEMA ACCESS
+                score = data.get("match_score", 0)
+                reasoning = data.get("full_details", {}).get("screening", {}).get("reasoning", "")
+                
+                if score >= 80:
+                    send_alert(name, email, score, reasoning)
+        except Exception as e:
+            logger.error(f"Alert Error: {e}")
 
-# --- Event Loop ---
-print("👷 Redis Worker Started. Waiting for jobs...")
+# --- Worker Loop ---
+logger.info("👷 Redis Worker Started. Waiting for jobs...")
 
 while True:
-    # BLPOP is a "Blocking Pop". It freezes here until a job arrives.
-    # It consumes 0% CPU while waiting. Efficient!
-    # Returns tuple: ('resume_queue', 'filename.pdf')
     try:
-        queue_name, filename = r.blpop("resume_queue")
-        process_candidate(filename)
+        # Blocking Pop - Efficient Wait
+        item = r.blpop("resume_queue", timeout=5)
+        if item:
+            queue_name, filename = item
+            process_candidate(filename)
     except Exception as e:
-        print(f"❌ Worker Error: {e}")
+        logger.error(f"❌ Worker Error: {e}")
         time.sleep(1)

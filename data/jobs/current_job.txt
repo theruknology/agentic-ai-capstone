@@ -1,25 +1,32 @@
-At [Company X], we rely on a dynamic team of engineers to solve the many challenges and puzzles of our rapidly evolving technical stack. We’re seeking a full stack developer who is ready to work with new technologies and architectures in a forward-thinking organization that’s always pushing boundaries. This person will have complete, end-to-end ownership of projects. The ideal candidate has experience building products across the stack and a firm understanding of web frameworks, APIs, databases, and multiple back-end languages. The full stack developer will join a small team that uses new technology to solve challenges for both the front-end and back-end architecture, ultimately delivering amazing experiences for global users.
-Objectives of this role
+JOB OBJECTIVE        
 
-    Work across the full stack, building highly scalable distributed solutions that enable positive user experiences and measurable business growth
-    Develop new features and infrastructure in support of rapidly emerging business and project requirements
-    Assume leadership of new projects, from conceptualization to deployment
-    Ensure application performance, uptime, and scale, and maintain high standards for code quality and application design
-    Work with agile development methodologies, adhering to best practices and pursuing continued learning opportunities
+We are seeking a talented and enthusiastic AI/ML Intern to join our team. You will help design and develop an intelligent system that can read, understand, and analyze financial statements using modern AI techniques (OCR, NLP, LLMs).
+The goal: automate the extraction, standardization, and scoring of financial data from various document formats.
 
-Responsibilities
+ROLES & RESPONSIBILITIES
 
-    Participate in all aspects of agile software development, including design, implementation, and deployment
-    Architect and provide guidance on building end-to-end systems optimized for speed and scale
-    Work primarily in NEXT.js, React, and JavaScript
-    Engage with inspiring designers and front-end engineers, and collaborate with leading back-end engineers to create reliable APIs
-    Collaborate across time zones via Slack, GitHub comments, documents, and frequent videoconferences
+    Collaborate with senior officials to understand project requirements and goals.
+    Build and improve pipelines to extract and structure data from financial statements (PDFs, images, text).
+    Use NLP and document AI models to interpret financial terminology and detect key insights.
+    Contribute to cleaning and standardizing financial data.
+    Participate in creating an automated financial scoring and reporting tool.
+    Document your work and share findings with the team.
 
-Required skills and qualifications
+WORK EXPERIENCE REQUIREMENTS          
 
-    At least one year of experience in building large-scale software applications
-    Experience in building web applications
-    Experience in designing and integrating RESTful APIs
-    Knowledge of React, and JavaScript
-    Excellent debugging and optimization skills
-    Experience in unit/integration testing
+    Final-year student or recent graduate in Computer Science, Data Science, or AI Engineering.
+    Strong Python skills (pandas, regex, data manipulation).
+    Familiarity with NLP / LLM tools (spaCy, Hugging Face, OpenAI API) or OCR/Parsing models (Docling, Tesseract,..).
+    Interest in finance, data, and applied AI.
+    Curious, analytical, autonomous, and eager to learn in a collaborative environment.
+    Solid understanding of machine learning concepts and algorithms.
+
+QUALIFICATION, CERTIFICATION & EDUCATIONAL REQUIREMENTS         
+
+    Bachelor’s or Master’s degree in AI, Computer Science, or a related field.
+
+PREFERRED SKILLS  
+
+    Experience with NLP,LLMs, document digitalization, or data extraction projects.
+    Basic understanding of database management.
+    Previous internship or project experience in AI/ML.
